@@ -35,3 +35,7 @@ out/
 
 ### VS Code ###
 .vscode/
+
+
+### docker yaml 파일 ###
+mysql/docker-compose.yml
