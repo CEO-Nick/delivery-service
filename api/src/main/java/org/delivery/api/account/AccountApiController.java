@@ -3,6 +3,8 @@ package org.delivery.api.account;
 import lombok.RequiredArgsConstructor;
 import org.delivery.api.account.model.AccountMeResponse;
 import org.delivery.api.common.api.Api;
+import org.delivery.api.common.error.ErrorCode;
+import org.delivery.api.common.exception.ApiException;
 import org.delivery.db.account.AccountEntity;
 import org.delivery.db.account.AccountRepository;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,6 +20,10 @@ import java.time.LocalDateTime;
 public class AccountApiController {
 
     private final AccountRepository accountRepository;
+    
+    // API는 성공 OR 실패
+    // 실패는 ExceptionHandler에서 처리
+    // Controller에서는 무조건 성공에 대한 처리
     @GetMapping("/me")
     public Api<AccountMeResponse> save() {
 
@@ -27,7 +33,15 @@ public class AccountApiController {
                 .registeredAt(LocalDateTime.now())
                 .build();
 
-        return Api.OK(response);
+        String str = "안녕하세요";
+        int age = 0;
+        try {
+            Integer.parseInt(str); // -> 런타임 예외 발생함
+        } catch (Exception e) {
+            throw new ApiException(ErrorCode.SERVER_ERROR, e, "사용자 me 호출시 에러 발생");
+        }
+        return Api.OK(response); //API는 항상 성공 처리
+
     }
 
 }
