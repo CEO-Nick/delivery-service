@@ -4,7 +4,7 @@ import org.delivery.api.domain.token.model.TokenDto;
 
 import java.util.Map;
 
-public interface TokenHelper {
+public interface TokenHelperIfs {
 
     TokenDto issueAccessToken(Map<String, Object> data);
 

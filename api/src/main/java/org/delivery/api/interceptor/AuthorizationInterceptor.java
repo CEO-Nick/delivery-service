@@ -4,16 +4,26 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.delivery.api.common.error.ErrorCode;
+import org.delivery.api.common.error.TokenErrorCode;
+import org.delivery.api.common.exception.ApiException;
+import org.delivery.api.domain.token.business.TokenBusiness;
 import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.resource.ResourceHttpRequestHandler;
+
+import java.util.Objects;
 
 @Slf4j
 @RequiredArgsConstructor
 @Component
 public class AuthorizationInterceptor implements HandlerInterceptor
 {
+
+    private final TokenBusiness tokenBusiness;
 
     // request의 사전 처리 담당(인증과 같은 중요한 검증 작업을 수행)
     @Override
@@ -33,7 +43,25 @@ public class AuthorizationInterceptor implements HandlerInterceptor
 
         // TODO : header 검증(JWT 유효한지)
 
+        // 헤더에서 토큰 꺼내기
+        String accessToken = request.getHeader("authorization-token");
+        // 토큰 없으면 예외 터뜨리기
+        if (accessToken == null) {
+            throw new ApiException(TokenErrorCode.AUTHORIZATION_TOKEN_NOT_FOUND);
+        }
 
-        return true;
+        // 토큰 있으면 validation 진행 -> userId 꺼내기
+        Long userId = tokenBusiness.validationAccessToken(accessToken);
+
+        // userId 있는 경우
+        if (userId != null) {
+            // 한가지 요청에 대해서 글로벌하게 저장할 수 있는 저장소에 저장하기
+            RequestAttributes requestContext = Objects.requireNonNull(RequestContextHolder.getRequestAttributes());
+            requestContext.setAttribute("userId", userId, RequestAttributes.SCOPE_REQUEST); // 범위는 이번 request 동안만
+            return true;
+        }
+        
+        // userId 없는 경우
+        throw new ApiException(ErrorCode.BAD_REQUEST, "인증 실패");
     }
 }

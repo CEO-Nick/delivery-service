@@ -4,10 +4,13 @@ import lombok.RequiredArgsConstructor;
 import org.delivery.api.common.annotaion.Business;
 import org.delivery.api.common.error.ErrorCode;
 import org.delivery.api.common.exception.ApiException;
+import org.delivery.api.domain.token.business.TokenBusiness;
+import org.delivery.api.domain.token.controller.model.TokenResponse;
 import org.delivery.api.domain.user.controller.model.UserLoginRequest;
 import org.delivery.api.domain.user.controller.model.UserRegisterRequest;
 import org.delivery.api.domain.user.controller.model.UserResponse;
 import org.delivery.api.domain.user.converter.UserConverter;
+import org.delivery.api.domain.user.model.User;
 import org.delivery.api.domain.user.service.UserService;
 import org.delivery.db.user.UserEntity;
 
@@ -19,6 +22,7 @@ public class UserBusiness { // 도메인 로직 제외한 복잡한 비지니스
 
     private final UserService userService;
     private final UserConverter userConverter;
+    private final TokenBusiness tokenBusiness;
 
     /**
      * 회원 가입 처리 로직
@@ -53,13 +57,16 @@ public class UserBusiness { // 도메인 로직 제외한 복잡한 비지니스
      * @param request
      * @return
      */
-    public UserResponse login(UserLoginRequest request) {
+    public TokenResponse login(UserLoginRequest request) {
         UserEntity userEntity = userService.login(request.getEmail(), request.getPassword());
         // 사용자 없으면 throw(login은 내부적으로 getUserWithThrow를 호출)
 
         // TODO 토큰 생성 로직으로 변경하기
+        return tokenBusiness.issueToken(userEntity);
+    }
 
-        
+    public UserResponse me(User user) {
+        UserEntity userEntity = userService.getUserWithThrow(user.getId());
         return userConverter.toResponse(userEntity);
     }
 }

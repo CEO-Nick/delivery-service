@@ -49,4 +49,9 @@ public class UserService { // 도메인 로직만 처리할 것
                 UserStatus.REGISTERED
         ).orElseThrow(() -> new ApiException(UserErrorCode.USER_NOT_FOUND));
     }
+
+    public UserEntity getUserWithThrow(Long userId) {
+        return userRepository.findFirstByIdAndStatusOrderByIdDesc(userId, UserStatus.REGISTERED)
+                .orElseThrow(() -> new ApiException(UserErrorCode.USER_NOT_FOUND));
+    }
 }

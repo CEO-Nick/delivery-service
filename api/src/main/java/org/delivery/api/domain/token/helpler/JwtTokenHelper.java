@@ -3,10 +3,9 @@ package org.delivery.api.domain.token.helpler;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
-import org.delivery.api.common.error.ErrorCode;
 import org.delivery.api.common.error.TokenErrorCode;
 import org.delivery.api.common.exception.ApiException;
-import org.delivery.api.domain.token.ifs.TokenHelper;
+import org.delivery.api.domain.token.ifs.TokenHelperIfs;
 import org.delivery.api.domain.token.model.TokenDto;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -19,7 +18,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Component
-public class JwtTokenHelper implements TokenHelper {
+public class JwtTokenHelper implements TokenHelperIfs {
 
     // yaml파일의 값에 접근할 때 쓴다(springframework패키지)
     @Value("${token.secret.key}")
@@ -36,7 +35,7 @@ public class JwtTokenHelper implements TokenHelper {
         // 현재 시간 + 토큰 유효 시간 = 토큰 만료 시간
         LocalDateTime expiredLocalDateTime = LocalDateTime.now().plusHours(accessTokenPlusHour);
 
-        // LocalDateTime -> Date 객체로 변환(JWT 라이브러리는 Date 객체 사용해서)
+        // LocalDateTime -> Date 객체로 변환(JWT 라이브러리는 Date 객체 사용하기 때문에)
         Date expiredAt = Date.from(expiredLocalDateTime.atZone(ZoneId.systemDefault()).toInstant());
 
         // yml파일에 저장한 secretKey로 SecretKey 객체 생성 -> token의 서명에 사용

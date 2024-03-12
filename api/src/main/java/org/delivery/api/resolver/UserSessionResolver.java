@@ -1,0 +1,62 @@
+package org.delivery.api.resolver;
+
+import lombok.RequiredArgsConstructor;
+import org.delivery.api.common.annotaion.UserSession;
+import org.delivery.api.domain.user.model.User;
+import org.delivery.api.domain.user.service.UserService;
+import org.delivery.db.user.UserEntity;
+import org.springframework.core.MethodParameter;
+import org.springframework.stereotype.Component;
+import org.springframework.web.bind.support.WebDataBinderFactory;
+import org.springframework.web.context.request.NativeWebRequest;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.method.support.HandlerMethodArgumentResolver;
+import org.springframework.web.method.support.ModelAndViewContainer;
+
+/**
+ * request 요청이 들어오면 실행되는 resolver (AOP 방식으로 동작)
+ */
+@Component
+@RequiredArgsConstructor
+public class UserSessionResolver implements HandlerMethodArgumentResolver {
+
+    private final UserService userService;
+
+    @Override
+    public boolean supportsParameter(MethodParameter parameter) {
+        // 지원하는 파라미터 체크, 애노테이션 체크
+
+        // 1. 애노테이션이 있는지 check : UserSession 이라는 애노테이션이 달려있는지 check
+        boolean annotation = parameter.hasParameterAnnotation(UserSession.class);
+
+        // 2. 파라미터의 타입 check : 매개변수로 들어오는 parameter 가 User 클래스가 맞는지 check
+        boolean parameterType = parameter.getParameterType().equals(User.class);
+
+        return (annotation && parameterType);
+    }
+
+    @Override
+    public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer, NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
+        // support parameter 에서 true 반환시 여기 실행
+
+        // AuthorizationInterceptor 에서 넣었던 request context holder 에서 userId 찾아오기
+        RequestAttributes requestContext = RequestContextHolder.getRequestAttributes();
+        Object userId = requestContext.getAttribute("userId", RequestAttributes.SCOPE_REQUEST);
+
+        UserEntity userEntity = userService.getUserWithThrow(Long.parseLong(userId.toString()));
+
+        // 사용자 정보 세팅
+        return User.builder()
+                .id(userEntity.getId())
+                .name(userEntity.getName())
+                .email(userEntity.getEmail())
+                .password(userEntity.getPassword())
+                .address(userEntity.getAddress())
+                .status(userEntity.getStatus())
+                .registeredAt(userEntity.getRegisteredAt())
+                .unregisteredAt(userEntity.getUnregisteredAt())
+                .lastLoginAt(userEntity.getLastLoginAt())
+                .build();
+    }
+}
