@@ -1,8 +1,9 @@
 package org.delivery.api.domain.store.service;
 
-import ch.qos.logback.core.spi.ErrorCodes;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.delivery.api.common.error.ErrorCode;
+import org.delivery.api.common.error.StoreErrorCode;
 import org.delivery.api.common.exception.ApiException;
 import org.delivery.db.store.StoreEntity;
 import org.delivery.db.store.StoreRepository;
@@ -16,6 +17,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class StoreService {
 
     private final StoreRepository storeRepository;
@@ -44,10 +46,12 @@ public class StoreService {
 
     // category로 store 검색
     public List<StoreEntity> searchByCategory(StoreCategory storeCategory) {
-        List<StoreEntity> list = storeRepository.findAllByStatusAndCategoryOrderByStarDesc(
+        Optional<List<StoreEntity>> list = storeRepository.findAllByStatusAndCategoryOrderByStarDesc(
                 StoreStatus.REGISTERED,
                 storeCategory);
-        return list;
+//        log.info("StoreService의 searchByCategory의 결과 : {}", list);
+        return list.filter(it->!it.isEmpty())
+                .orElseThrow(()-> new ApiException(StoreErrorCode.STORES_NOT_FOUND));
     }
 
     // 전체 store 검색

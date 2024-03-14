@@ -10,7 +10,7 @@ spring:
     url: jdbc:mysql://localhost:3306/delivery?useSSL=false&useUnicode=true&allowPublicKeyRetrieval=true
     driver-class-name: com.mysql.cj.jdbc.Driver
     username: root
-    password: Whdlrgus99@ # 집 : whdlrgus99@
+    password: whdlrgus99@ # 노트북 : Whdlrgus99@  집 : whdlrgus99@
 
 token:
   secret:
